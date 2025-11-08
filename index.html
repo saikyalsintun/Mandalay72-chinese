@@ -93,12 +93,12 @@
   <div>
     <label for="chapterSelect">选择课题:</label>
     <select id="chapterSelect" onchange="selectChapter()">
-      <option value="">--选择r--</option>
+      <option value="">--选择--</option>
     </select>
   </div>
   <div class="word" id="word"></div>
   <input type="text" id="answer" placeholder="Type Chinese here">
-  <button onclick="checkAnswer()">正在查看中。。。</button>
+  <button onclick="checkAnswer()">提交</button>
   <div class="status" id="status"></div>
 
   <table class="error-table" id="errorTable">
@@ -116,9 +116,9 @@
 <!-- List Section -->
 <div id="list" class="section">
   <div>
-    <label for="vocabChapterSelect">Select Chapter:</label>
+    <label for="vocabChapterSelect">选择课题:</label>
     <select id="vocabChapterSelect" onchange="showVocab()">
-      <option value="">--Choose Chapter--</option>
+      <option value="">--选择--</option>
     </select>
   </div>
   <table>
@@ -199,14 +199,14 @@
   function checkAnswer() {
     const userInput = answerInput.value.trim();
     if (!userInput) {
-      statusDiv.textContent = "⚠️ Please type an answer!";
+      statusDiv.textContent = "⚠️ 请打字你的回答!";
       return;
     }
     const correctAnswer = current.A.trim();
     if (userInput === correctAnswer) {
-      statusDiv.textContent = "✅ Correct!";
+      statusDiv.textContent = "✅ 正确!";
     } else {
-      statusDiv.textContent = `❌ Wrong! Correct: ${correctAnswer}`;
+      statusDiv.textContent = `❌ 错! 正确答案: ${correctAnswer}`;
       errors.push({english: current.B, your: userInput, correct: correctAnswer});
       updateErrorTable();
     }
