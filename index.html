@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Vocabulary App</title>
+  <title>词汇应用</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* General */
@@ -80,33 +80,33 @@
 </head>
 <body>
 
-<h1>Vocabulary App</h1>
-<button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+<h1>词汇应用</h1>
+<button onclick="toggleDarkMode()">亮光|深黑</button>
 
 <div class="tabs">
-  <button class="tab active" onclick="showSection('test')">Test</button>
-  <button class="tab" onclick="showSection('list')">Vocabulary List</button>
+  <button class="tab active" onclick="showSection('test')">测试</button>
+  <button class="tab" onclick="showSection('list')">词汇表</button>
 </div>
 
 <!-- Test Section -->
 <div id="test" class="section active">
   <div>
-    <label for="chapterSelect">Select Chapter:</label>
+    <label for="chapterSelect">选择课题:</label>
     <select id="chapterSelect" onchange="selectChapter()">
-      <option value="">--Choose Chapter--</option>
+      <option value="">--选择r--</option>
     </select>
   </div>
   <div class="word" id="word"></div>
   <input type="text" id="answer" placeholder="Type Chinese here">
-  <button onclick="checkAnswer()">Check</button>
+  <button onclick="checkAnswer()">正在查看中。。。</button>
   <div class="status" id="status"></div>
 
   <table class="error-table" id="errorTable">
     <thead>
       <tr>
-        <th>English</th>
-        <th>Your Answer</th>
-        <th>Correct Answer</th>
+        <th>英语</th>
+        <th>你回答</th>
+        <th>正确答案</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -124,8 +124,8 @@
   <table>
     <thead>
       <tr>
-        <th>Chinese</th>
-        <th>Meaning</th>
+        <th>中文</th>
+        <th>意义</th>
       </tr>
     </thead>
     <tbody id="vocabTableBody"></tbody>
