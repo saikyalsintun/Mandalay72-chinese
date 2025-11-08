@@ -54,6 +54,7 @@
     .word { font-size: 2em; margin: 20px 0; color: #1e88e5; }
     body.dark .word { color: #90caf9; }
     .status { margin-top: 15px; font-weight: bold; font-size: 1.1em; }
+    .progress { margin-top: 10px; font-weight: bold; }
 
     .error-table {
       margin: 20px 0;
@@ -100,6 +101,7 @@
   <input type="text" id="answer" placeholder="Type Chinese here">
   <button onclick="checkAnswer()">提交</button>
   <div class="status" id="status"></div>
+  <div class="progress" id="progress"></div>
 
   <table class="error-table" id="errorTable">
     <thead>
@@ -138,12 +140,14 @@
   let currentChapter = [];
   let current = {};
   const errors = [];
+  let completedCount = 0;
 
   const chapterSelect = document.getElementById('chapterSelect');
   const wordDiv = document.getElementById('word');
   const statusDiv = document.getElementById('status');
   const answerInput = document.getElementById('answer');
   const errorTableBody = document.querySelector('#errorTable tbody');
+  const progressDiv = document.getElementById('progress');
 
   const vocabChapterSelect = document.getElementById('vocabChapterSelect');
   const vocabTableBody = document.getElementById('vocabTableBody');
@@ -183,6 +187,10 @@
     const selected = chapterSelect.value;
     if (!selected) return;
     currentChapter = vocabData[selected];
+    completedCount = 0;
+    errors.length = 0;
+    updateProgress();
+    updateErrorTable();
     showRandomWord();
   }
 
@@ -210,8 +218,10 @@
     } else {
       statusDiv.textContent = `❌ 错! 正确答案: ${correctAnswer}`;
       errors.push({english: current.B, your: userInput, correct: correctAnswer});
-      updateErrorTable();
     }
+    completedCount++;
+    updateProgress();
+    updateErrorTable();
     setTimeout(showRandomWord, 2000);
   }
 
@@ -222,6 +232,14 @@
       row.innerHTML = `<td>${err.english}</td><td>${err.your}</td><td>${err.correct}</td>`;
       errorTableBody.appendChild(row);
     });
+  }
+
+  function updateProgress() {
+    if (currentChapter && currentChapter.length > 0) {
+      progressDiv.textContent = `已完成 ${completedCount} / ${currentChapter.length} 个单词`;
+    } else {
+      progressDiv.textContent = '';
+    }
   }
 
   // Vocabulary List
