@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vocabulary App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* General */
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+      transition: background-color 0.3s, color 0.3s;
+      background-color: #f4f4f4;
+      color: #333;
+      text-align: center;
+    }
+    body.dark {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    h1 { margin-bottom: 20px; }
+
+    button, select, input {
+      padding: 8px 12px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    body.dark button, body.dark select, body.dark input {
+      background-color: #333;
+      color: #e0e0e0;
+      border: 1px solid #555;
+    }
+    button { cursor: pointer; }
+
+    /* Tabs */
+    .tabs { display: flex; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; background-color: #ccc; }
+    .tab.active { background-color: #1e88e5; color: white; }
+    body.dark .tab.active { background-color: #90caf9; color: black; }
+
+    /* Sections */
+    .section { display: none; width: 100%; max-width: 600px; flex-direction: column; align-items: center; }
+    .section.active { display: flex; }
+
+    /* Test Section */
+    .word { font-size: 2em; margin: 20px 0; color: #1e88e5; }
+    body.dark .word { color: #90caf9; }
+    .status { margin-top: 15px; font-weight: bold; font-size: 1.1em; }
+
+    .error-table {
+      margin: 20px 0;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .error-table th, .error-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    body.dark .error-table th, body.dark .error-table td { border: 1px solid #555; }
+
+    /* List Section */
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    body.dark th, body.dark td { border: 1px solid #555; }
+
+    @media(max-width: 600px){
+      .word { font-size: 1.5em; }
+      button, select, input { font-size: 0.9em; width: 90%; max-width: 300px; }
+      .tabs { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Vocabulary App</h1>
+<button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+<div class="tabs">
+  <button class="tab active" onclick="showSection('test')">Test</button>
+  <button class="tab" onclick="showSection('list')">Vocabulary List</button>
+</div>
+
+<!-- Test Section -->
+<div id="test" class="section active">
+  <div>
+    <label for="chapterSelect">Select Chapter:</label>
+    <select id="chapterSelect" onchange="selectChapter()">
+      <option value="">--Choose Chapter--</option>
+    </select>
+  </div>
+  <div class="word" id="word"></div>
+  <input type="text" id="answer" placeholder="Type Chinese here">
+  <button onclick="checkAnswer()">Check</button>
+  <div class="status" id="status"></div>
+
+  <table class="error-table" id="errorTable">
+    <thead>
+      <tr>
+        <th>English</th>
+        <th>Your Answer</th>
+        <th>Correct Answer</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- List Section -->
+<div id="list" class="section">
+  <div>
+    <label for="vocabChapterSelect">Select Chapter:</label>
+    <select id="vocabChapterSelect" onchange="showVocab()">
+      <option value="">--Choose Chapter--</option>
+    </select>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Chinese</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody id="vocabTableBody"></tbody>
+  </table>
+</div>
+
+<script>
+  let vocabData = {};
+  let currentChapter = [];
+  let current = {};
+  const errors = [];
+
+  const chapterSelect = document.getElementById('chapterSelect');
+  const wordDiv = document.getElementById('word');
+  const statusDiv = document.getElementById('status');
+  const answerInput = document.getElementById('answer');
+  const errorTableBody = document.querySelector('#errorTable tbody');
+
+  const vocabChapterSelect = document.getElementById('vocabChapterSelect');
+  const vocabTableBody = document.getElementById('vocabTableBody');
+
+  fetch('vocab.json')
+    .then(res => res.json())
+    .then(data => {
+      vocabData = data;
+      for (let chapter in vocabData) {
+        const option1 = document.createElement('option');
+        option1.value = chapter;
+        option1.textContent = chapter;
+        chapterSelect.appendChild(option1);
+
+        const option2 = document.createElement('option');
+        option2.value = chapter;
+        option2.textContent = chapter;
+        vocabChapterSelect.appendChild(option2);
+      }
+    })
+    .catch(err => console.error("Error loading JSON:", err));
+
+  function showSection(sectionId){
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+  }
+
+  // Test functions
+  function selectChapter() {
+    const selected = chapterSelect.value;
+    if (!selected) return;
+    currentChapter = vocabData[selected];
+    showRandomWord();
+  }
+
+  function showRandomWord() {
+    if (!currentChapter || currentChapter.length === 0) {
+      wordDiv.textContent = "No words in this chapter!";
+      return;
+    }
+    const randomIndex = Math.floor(Math.random() * currentChapter.length);
+    current = currentChapter[randomIndex];
+    wordDiv.textContent = current.B;
+    answerInput.value = '';
+    statusDiv.textContent = '';
+  }
+
+  function checkAnswer() {
+    const userInput = answerInput.value.trim();
+    if (!userInput) {
+      statusDiv.textContent = "⚠️ Please type an answer!";
+      return;
+    }
+    const correctAnswer = current.A.trim();
+    if (userInput === correctAnswer) {
+      statusDiv.textContent = "✅ Correct!";
+    } else {
+      statusDiv.textContent = `❌ Wrong! Correct: ${correctAnswer}`;
+      errors.push({english: current.B, your: userInput, correct: correctAnswer});
+      updateErrorTable();
+    }
+    setTimeout(showRandomWord, 2000);
+  }
+
+  function updateErrorTable() {
+    errorTableBody.innerHTML = '';
+    errors.forEach(err => {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${err.english}</td><td>${err.your}</td><td>${err.correct}</td>`;
+      errorTableBody.appendChild(row);
+    });
+  }
+
+  // Vocabulary List
+  function showVocab() {
+    const chapter = vocabChapterSelect.value;
+    vocabTableBody.innerHTML = '';
+    if (!chapter || !vocabData[chapter]) return;
+    vocabData[chapter].forEach(w => {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${w.A}</td><td>${w.B}</td>`;
+      vocabTableBody.appendChild(row);
+    });
+  }
+</script>
+</body>
+</html>
