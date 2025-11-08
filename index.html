@@ -130,6 +130,7 @@
     </thead>
     <tbody id="vocabTableBody"></tbody>
   </table>
+  <div id="wordCount" style="margin-top: 10px; font-weight: bold;"></div>
 </div>
 
 <script>
@@ -146,6 +147,7 @@
 
   const vocabChapterSelect = document.getElementById('vocabChapterSelect');
   const vocabTableBody = document.getElementById('vocabTableBody');
+  const wordCountDiv = document.getElementById('wordCount');
 
   fetch('vocab.json')
     .then(res => res.json())
@@ -226,12 +228,18 @@
   function showVocab() {
     const chapter = vocabChapterSelect.value;
     vocabTableBody.innerHTML = '';
+    wordCountDiv.textContent = '';
     if (!chapter || !vocabData[chapter]) return;
-    vocabData[chapter].forEach(w => {
+
+    const words = vocabData[chapter];
+    words.forEach(w => {
       const row = document.createElement('tr');
       row.innerHTML = `<td>${w.A}</td><td>${w.B}</td>`;
       vocabTableBody.appendChild(row);
     });
+
+    // Total word count
+    wordCountDiv.textContent = `总词汇数: ${words.length}`;
   }
 </script>
 </body>
