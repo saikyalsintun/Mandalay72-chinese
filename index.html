@@ -5,7 +5,6 @@
   <title>词汇应用</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* General */
     body {
       font-family: Arial, sans-serif;
       display: flex;
@@ -23,9 +22,7 @@
       background-color: #121212;
       color: #e0e0e0;
     }
-
     h1 { margin-bottom: 20px; }
-
     button, select, input {
       padding: 8px 12px;
       margin: 5px;
@@ -39,39 +36,22 @@
       border: 1px solid #555;
     }
     button { cursor: pointer; }
-
-    /* Tabs */
     .tabs { display: flex; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
     .tab { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; background-color: #ccc; }
     .tab.active { background-color: #1e88e5; color: white; }
     body.dark .tab.active { background-color: #90caf9; color: black; }
-
-    /* Sections */
     .section { display: none; width: 100%; max-width: 600px; flex-direction: column; align-items: center; }
     .section.active { display: flex; }
-
-    /* Test Section */
     .word { font-size: 2em; margin: 20px 0; color: #1e88e5; }
     body.dark .word { color: #90caf9; }
     .status { margin-top: 15px; font-weight: bold; font-size: 1.1em; }
     .progress { margin-top: 10px; font-weight: bold; }
-
-    .error-table {
-      margin: 20px 0;
-      border-collapse: collapse;
-      width: 100%;
-    }
-    .error-table th, .error-table td {
-      border: 1px solid #ccc;
-      padding: 8px;
-    }
+    .error-table { margin: 20px 0; border-collapse: collapse; width: 100%; }
+    .error-table th, .error-table td { border: 1px solid #ccc; padding: 8px; }
     body.dark .error-table th, body.dark .error-table td { border: 1px solid #555; }
-
-    /* List Section */
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     body.dark th, body.dark td { border: 1px solid #555; }
-
     @media(max-width: 600px){
       .word { font-size: 1.5em; }
       button, select, input { font-size: 0.9em; width: 90%; max-width: 300px; }
@@ -136,129 +116,134 @@
 </div>
 
 <script>
-  let vocabData = {};
-  let currentChapter = [];
-  let current = {};
-  const errors = [];
-  let completedCount = 0;
+let vocabData = {};
+let currentChapter = [];
+let remainingWords = [];
+let current = {};
+const errors = [];
+let completedCount = 0;
 
-  const chapterSelect = document.getElementById('chapterSelect');
-  const wordDiv = document.getElementById('word');
-  const statusDiv = document.getElementById('status');
-  const answerInput = document.getElementById('answer');
-  const errorTableBody = document.querySelector('#errorTable tbody');
-  const progressDiv = document.getElementById('progress');
+const chapterSelect = document.getElementById('chapterSelect');
+const wordDiv = document.getElementById('word');
+const statusDiv = document.getElementById('status');
+const answerInput = document.getElementById('answer');
+const errorTableBody = document.querySelector('#errorTable tbody');
+const progressDiv = document.getElementById('progress');
 
-  const vocabChapterSelect = document.getElementById('vocabChapterSelect');
-  const vocabTableBody = document.getElementById('vocabTableBody');
-  const wordCountDiv = document.getElementById('wordCount');
+const vocabChapterSelect = document.getElementById('vocabChapterSelect');
+const vocabTableBody = document.getElementById('vocabTableBody');
+const wordCountDiv = document.getElementById('wordCount');
 
-  fetch('vocab.json')
-    .then(res => res.json())
-    .then(data => {
-      vocabData = data;
-      for (let chapter in vocabData) {
-        const option1 = document.createElement('option');
-        option1.value = chapter;
-        option1.textContent = chapter;
-        chapterSelect.appendChild(option1);
+fetch('vocab.json')
+  .then(res => res.json())
+  .then(data => {
+    vocabData = data;
+    for (let chapter in vocabData) {
+      const option1 = document.createElement('option');
+      option1.value = chapter;
+      option1.textContent = chapter;
+      chapterSelect.appendChild(option1);
 
-        const option2 = document.createElement('option');
-        option2.value = chapter;
-        option2.textContent = chapter;
-        vocabChapterSelect.appendChild(option2);
-      }
-    })
-    .catch(err => console.error("Error loading JSON:", err));
-
-  function showSection(sectionId){
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.getElementById(sectionId).classList.add('active');
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
-  }
-
-  function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-  }
-
-  // Test functions
-  function selectChapter() {
-    const selected = chapterSelect.value;
-    if (!selected) return;
-    currentChapter = vocabData[selected];
-    completedCount = 0;
-    errors.length = 0;
-    updateProgress();
-    updateErrorTable();
-    showRandomWord();
-  }
-
-  function showRandomWord() {
-    if (!currentChapter || currentChapter.length === 0) {
-      wordDiv.textContent = "No words in this chapter!";
-      return;
+      const option2 = document.createElement('option');
+      option2.value = chapter;
+      option2.textContent = chapter;
+      vocabChapterSelect.appendChild(option2);
     }
-    const randomIndex = Math.floor(Math.random() * currentChapter.length);
-    current = currentChapter[randomIndex];
-    wordDiv.textContent = current.B;
+  })
+  .catch(err => console.error("Error loading JSON:", err));
+
+function showSection(sectionId){
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(sectionId).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle('dark');
+}
+
+// Test functions
+function selectChapter() {
+  const selected = chapterSelect.value;
+  if (!selected) return;
+  currentChapter = vocabData[selected];
+  remainingWords = [...currentChapter]; // clone array for random order
+  completedCount = 0;
+  errors.length = 0;
+  updateProgress();
+  updateErrorTable();
+  showRandomWord();
+}
+
+function showRandomWord() {
+  if (remainingWords.length === 0) {
+    wordDiv.textContent = "全部问题都答完毕 🎉";
     answerInput.value = '';
     statusDiv.textContent = '';
+    return;
   }
+  const randomIndex = Math.floor(Math.random() * remainingWords.length);
+  current = remainingWords[randomIndex];
+  wordDiv.textContent = current.B;
+  answerInput.value = '';
+  statusDiv.textContent = '';
+}
 
-  function checkAnswer() {
-    const userInput = answerInput.value.trim();
-    if (!userInput) {
-      statusDiv.textContent = "⚠️ 请打字你的回答!";
-      return;
-    }
-    const correctAnswer = current.A.trim();
-    if (userInput === correctAnswer) {
-      statusDiv.textContent = "✅ 正确!";
-    } else {
-      statusDiv.textContent = `❌ 错! 正确答案: ${correctAnswer}`;
-      errors.push({english: current.B, your: userInput, correct: correctAnswer});
-    }
-    completedCount++;
-    updateProgress();
-    updateErrorTable();
-    setTimeout(showRandomWord, 2000);
+function checkAnswer() {
+  if (!current.A) return; // no current word
+  const userInput = answerInput.value.trim();
+  if (!userInput) {
+    statusDiv.textContent = "⚠️ 请打字你的回答!";
+    return;
   }
-
-  function updateErrorTable() {
-    errorTableBody.innerHTML = '';
-    errors.forEach(err => {
-      const row = document.createElement('tr');
-      row.innerHTML = `<td>${err.english}</td><td>${err.your}</td><td>${err.correct}</td>`;
-      errorTableBody.appendChild(row);
-    });
+  const correctAnswer = current.A.trim();
+  if (userInput === correctAnswer) {
+    statusDiv.textContent = "✅ 正确!";
+  } else {
+    statusDiv.textContent = `❌ 错! 正确答案: ${correctAnswer}`;
+    errors.push({english: current.B, your: userInput, correct: correctAnswer});
   }
+  completedCount++;
+  // Remove answered word from remaining
+  remainingWords = remainingWords.filter(w => w !== current);
+  updateProgress();
+  updateErrorTable();
+  setTimeout(showRandomWord, 1000);
+}
 
-  function updateProgress() {
-    if (currentChapter && currentChapter.length > 0) {
-      progressDiv.textContent = `已完成 ${completedCount} / ${currentChapter.length} 个单词`;
-    } else {
-      progressDiv.textContent = '';
-    }
+function updateErrorTable() {
+  errorTableBody.innerHTML = '';
+  errors.forEach(err => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${err.english}</td><td>${err.your}</td><td>${err.correct}</td>`;
+    errorTableBody.appendChild(row);
+  });
+}
+
+function updateProgress() {
+  if (currentChapter && currentChapter.length > 0) {
+    progressDiv.textContent = `已完成 ${completedCount} / ${currentChapter.length} 个单词`;
+  } else {
+    progressDiv.textContent = '';
   }
+}
 
-  // Vocabulary List
-  function showVocab() {
-    const chapter = vocabChapterSelect.value;
-    vocabTableBody.innerHTML = '';
-    wordCountDiv.textContent = '';
-    if (!chapter || !vocabData[chapter]) return;
+// Vocabulary List
+function showVocab() {
+  const chapter = vocabChapterSelect.value;
+  vocabTableBody.innerHTML = '';
+  wordCountDiv.textContent = '';
+  if (!chapter || !vocabData[chapter]) return;
 
-    const words = vocabData[chapter];
-    words.forEach(w => {
-      const row = document.createElement('tr');
-      row.innerHTML = `<td>${w.A}</td><td>${w.B}</td>`;
-      vocabTableBody.appendChild(row);
-    });
-
-    // Total word count
-    wordCountDiv.textContent = `总词汇数: ${words.length}`;
-  }
+  const words = vocabData[chapter];
+  words.forEach(w => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${w.A}</td><td>${w.B}</td>`;
+    vocabTableBody.appendChild(row);
+  });
+  wordCountDiv.textContent = `总词汇数: ${words.length}`;
+}
 </script>
 </body>
 </html>
